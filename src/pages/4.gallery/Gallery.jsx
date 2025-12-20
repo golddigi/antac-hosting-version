@@ -75,7 +75,7 @@ const Gallery = () => {
     if (activeTab !== "videos") setZoom((z) => Math.max(z - 0.3, 1));
   };
 
-  // --- YOUTUBE HELPERS (PRODUCTION SAFE) ---
+  // --- YOUTUBE HELPERS ---
   const isYouTube = (url) =>
     typeof url === "string" &&
     (url.includes("youtube.com") || url.includes("youtu.be"));
@@ -83,32 +83,25 @@ const Gallery = () => {
   const getYouTubeId = (url) => {
     try {
       const u = new URL(url);
-
-      // youtu.be/VIDEO_ID
-      if (u.hostname === "youtu.be") {
-        return u.pathname.slice(1);
-      }
-
-      // youtube.com/shorts/VIDEO_ID
-      if (u.pathname.startsWith("/shorts/")) {
+      if (u.hostname === "youtu.be") return u.pathname.slice(1);
+      if (u.pathname.startsWith("/shorts/"))
         return u.pathname.replace("/shorts/", "");
-      }
-
-      // youtube.com/watch?v=VIDEO_ID
       return u.searchParams.get("v");
     } catch {
       return null;
     }
   };
 
+  const isShort = (url) => typeof url === "string" && url.includes("/shorts/");
+
   const convertToEmbed = (url) => {
     if (!isYouTube(url)) return null;
-
     const id = getYouTubeId(url);
     return id
-      ? `https://www.youtube.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0`
+      ? `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`
       : null;
   };
+
   const getThumbnail = (url) => {
     if (!isYouTube(url)) return null;
     const id = getYouTubeId(url);
@@ -228,23 +221,23 @@ const Gallery = () => {
               <div
                 key={i}
                 onClick={() => open(i)}
-                className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition cursor-pointer"
+                className="rounded-2xl overflow-hidden border border-gray-200 bg-white shadow-sm hover:shadow-md transition cursor-pointer group"
               >
-                <div className="relative w-full h-0 pb-[56.25%] bg-gray-100">
+                <div className="relative w-full aspect-video bg-gray-100">
                   {isYouTube(video.url) ? (
                     <img
                       src={getThumbnail(video.url)}
-                      className="absolute inset-0 w-full h-full object-cover opacity-90 group-hover:opacity-100"
+                      className="absolute inset-0 w-full h-full object-contain sm:object-cover bg-black"
                     />
                   ) : (
                     <video
                       src={video.url}
-                      className="absolute inset-0 w-full h-full object-cover opacity-90"
+                      className="absolute inset-0 w-full h-full object-contain sm:object-cover bg-black"
                     ></video>
                   )}
 
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/80 p-2 rounded-full shadow-md text-red-600 group-hover:bg-red-600 group-hover:text-white">
+                    <div className="bg-white/80 p-2 rounded-full shadow-md text-red-600 group-hover:bg-red-600 group-hover:text-white transition">
                       <IoPlayCircle className="w-12 h-12" />
                     </div>
                   </div>
@@ -264,42 +257,39 @@ const Gallery = () => {
         {activeIndex !== null && (
           <div
             onClick={close}
-            className="fixed inset-0 bg-black bg-opacity-95 flex justify-center items-center z-[9999] p-4 lg p-16"
+            className="fixed inset-0 bg-black/95 z-[9999] flex items-center justify-center p-4"
           >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="relative flex justify-center items-center w-full max-w-6xl h-full"
+            {/* Close Button */}
+            <button
+              onClick={close}
+              className="absolute top-4 right-4 text-white hover:text-gray-300 z-50"
             >
-              {/* Close */}
-              <button
-                onClick={close}
-                className="absolute -top-10 right-0 sm:top-[-2rem] sm:right-[-2rem] text-white hover:text-gray-300 z-50"
-              >
-                <IoClose size={40} />
-              </button>
+              <IoClose size={36} />
+            </button>
 
-              {/* Prev/Next */}
-              {activeMedia.length > 1 && (
-                <>
-                  <button
-                    onClick={prev}
-                    className="absolute left-[-1rem] sm:left-[-4rem] top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2 z-50"
-                  >
-                    <IoChevronBack size={48} />
-                  </button>
+            {/* IMAGE LIGHTBOX with Side Navigation */}
+            {activeTab !== "videos" && (
+              <div className="relative flex items-center justify-center w-full h-full">
+                {/* Prev/Next for Images */}
+                {activeMedia.length > 1 && (
+                  <>
+                    <button
+                      onClick={prev}
+                      className="absolute left-2 sm:left-4 lg:left-8 text-white hover:text-green-400 p-2 z-50 bg-black/50 rounded-full transition"
+                    >
+                      <IoChevronBack size={32} className="sm:w-10 sm:h-10" />
+                    </button>
 
-                  <button
-                    onClick={next}
-                    className="absolute right-[-1rem] sm:right-[-4rem] top-1/2 -translate-y-1/2 text-white hover:text-gray-300 p-2 z-50"
-                  >
-                    <IoChevronForward size={48} />
-                  </button>
-                </>
-              )}
+                    <button
+                      onClick={next}
+                      className="absolute right-2 sm:right-4 lg:right-8 text-white hover:text-green-400 p-2 z-50 bg-black/50 rounded-full transition"
+                    >
+                      <IoChevronForward size={32} className="sm:w-10 sm:h-10" />
+                    </button>
+                  </>
+                )}
 
-              {/* Image Lightbox */}
-              {activeTab !== "videos" && (
-                <div className="relative">
+                <div className="relative" onClick={(e) => e.stopPropagation()}>
                   <img
                     src={activeMedia[activeIndex]}
                     style={{ transform: `scale(${zoom})` }}
@@ -307,11 +297,11 @@ const Gallery = () => {
                   />
 
                   {/* Zoom Controls */}
-                  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-3 bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/20">
+                  <div className="absolute -bottom-16 left-1/2 -translate-x-1/2 flex gap-3 bg-black/60 backdrop-blur-md p-2 rounded-full border border-white/20">
                     <button
                       onClick={zoomOut}
                       disabled={zoom <= 1}
-                      className="text-white px-3 hover:text-green-400 disabled:opacity-50"
+                      className="text-white px-3 hover:text-green-400 disabled:opacity-50 transition"
                     >
                       <IoRemoveOutline size={24} />
                     </button>
@@ -323,19 +313,27 @@ const Gallery = () => {
                     <button
                       onClick={zoomIn}
                       disabled={zoom >= 3}
-                      className="text-white px-3 hover:text-green-400 disabled:opacity-50"
+                      className="text-white px-3 hover:text-green-400 disabled:opacity-50 transition"
                     >
                       <IoAddOutline size={24} />
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Video Lightbox */}
-              {activeTab === "videos" && (
+            {/* VIDEO LIGHTBOX with Bottom Navigation */}
+            {activeTab === "videos" && (
+              <div
+                className="w-full flex flex-col items-center gap-4"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <div
-                  className="lg:m-8 w-full aspect-video bg-black shadow-2xl"
-                  onClick={(e) => e.stopPropagation()}
+                  className={`bg-black rounded-lg overflow-hidden shadow-2xl ${
+                    isShort(activeMedia[activeIndex].url)
+                      ? "aspect-[9/16] max-h-[70vh]"
+                      : "aspect-video w-full max-w-5xl"
+                  }`}
                 >
                   {isYouTube(activeMedia[activeIndex].url) ? (
                     <iframe
@@ -343,20 +341,44 @@ const Gallery = () => {
                       className="w-full h-full"
                       allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
                       allowFullScreen
-                    ></iframe>
+                    />
                   ) : (
                     <video
                       src={activeMedia[activeIndex].url}
                       controls
                       autoPlay
-                      muted
                       playsInline
-                      className="w-full h-full object-contain"
-                    ></video>
+                      className="w-full h-full object-contain bg-black"
+                    />
                   )}
                 </div>
-              )}
-            </div>
+
+                {/* BOTTOM NAVIGATION for Videos */}
+                {activeMedia.length > 1 && (
+                  <div className="flex items-center justify-between gap-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/20">
+                    <button
+                      onClick={prev}
+                      className="flex items-center gap-2 text-white hover:text-green-400 transition"
+                    >
+                      <IoChevronBack size={22} />
+                      <span className="hidden sm:inline">Previous</span>
+                    </button>
+
+                    <span className="text-white text-sm font-mono">
+                      {activeIndex + 1} / {activeMedia.length}
+                    </span>
+
+                    <button
+                      onClick={next}
+                      className="flex items-center gap-2 text-white hover:text-green-400 transition"
+                    >
+                      <span className="hidden sm:inline">Next</span>
+                      <IoChevronForward size={22} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </div>
