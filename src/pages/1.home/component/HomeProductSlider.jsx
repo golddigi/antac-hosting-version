@@ -1,4 +1,3 @@
-// HomeProductsSlider.jsx
 import { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -18,7 +17,9 @@ const categories = {
   services: "Our Services",
 };
 
-// Slider for each category
+/* ===========================
+   Category Slider
+   =========================== */
 const CategorySlider = ({ title, items }) => {
   const prevBtn = useRef(null);
   const nextBtn = useRef(null);
@@ -32,46 +33,34 @@ const CategorySlider = ({ title, items }) => {
 
   return (
     <div className="mb-20 relative">
-      {/* Category Title */}
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-2xl md:text-3xl font-semibold text-gray-900 border-l-4 border-green-600 pl-4">
           {title}
         </h3>
       </div>
 
-      {/* Navigation Buttons */}
+      {/* Prev Button */}
       <button
         ref={prevBtn}
-        className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 sm:-translate-x-4 md:-translate-x-6 
-        z-20 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 
-        flex items-center justify-center hover:opacity-70 transition-all 
+        className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20
+        w-12 h-12 flex items-center justify-center
         ${isBeginning ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        aria-label={`Previous ${title}`}
       >
-        <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-700">
-          &lsaquo;
-        </span>
+        <span className="text-4xl font-bold text-gray-700">&lsaquo;</span>
       </button>
 
+      {/* Next Button */}
       <button
         ref={nextBtn}
-        className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 sm:translate-x-4 md:translate-x-6 
-        z-20 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 
-        flex items-center justify-center hover:opacity-70 transition-all 
+        className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20
+        w-12 h-12 flex items-center justify-center
         ${isEnd ? "opacity-0 pointer-events-none" : "opacity-100"}`}
-        aria-label={`Next ${title}`}
       >
-        <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-700">
-          &rsaquo;
-        </span>
+        <span className="text-4xl font-bold text-gray-700">&rsaquo;</span>
       </button>
 
-      {/* Swiper */}
       <Swiper
         modules={[Navigation]}
-        loop={false}
-        speed={400}
-        allowTouchMove={true}
         navigation={{
           prevEl: prevBtn.current,
           nextEl: nextBtn.current,
@@ -85,7 +74,6 @@ const CategorySlider = ({ title, items }) => {
         spaceBetween={15}
         breakpoints={{
           0: { slidesPerView: 2, spaceBetween: 10 },
-          380: { slidesPerView: 2.2 },
           480: { slidesPerView: 2.4 },
           640: { slidesPerView: 3 },
           1024: { slidesPerView: 4 },
@@ -93,7 +81,6 @@ const CategorySlider = ({ title, items }) => {
       >
         {items.map((product) => (
           <SwiperSlide key={product.id}>
-            {/* DIRECT render — no lazy load */}
             <ProductCard id={product.id} />
           </SwiperSlide>
         ))}
@@ -102,26 +89,27 @@ const CategorySlider = ({ title, items }) => {
   );
 };
 
+/* ===========================
+   Main Component
+   =========================== */
 const HomeProductsSlider = () => {
   const getProductsByCategory = (category) =>
     products.filter((p) => p.category === category);
 
   return (
-    <section className="mt-32 sm:mt-40 mb-24 px-4 sm:px-8 max-w-7xl mx-auto bg-gradient-to-br from-blue-50 via-white to-teal-50">
+    <section className="mt-32 mb-24 px-4 max-w-7xl mx-auto">
       <div className="text-center mb-14">
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
           Our Products
         </h2>
         <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-          Explore our wide range of solar, LED, and lighting solutions crafted
-          for performance and reliability.
+          Explore our wide range of solar, LED, and lighting solutions.
         </p>
       </div>
 
       {Object.entries(categories).map(([key, title]) => {
         const items = getProductsByCategory(key);
         if (!items.length) return null;
-
         return <CategorySlider key={key} title={title} items={items} />;
       })}
     </section>
